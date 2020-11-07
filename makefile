@@ -1,9 +1,8 @@
-.PHONY : build clean
+.PHONY : build clean prepare
 
 default :
 	@echo "======================================="
 	@echo "Please use 'make build' command to build it.."
-	@echo "Please use 'make rebuild' command to build it.."
 	@echo "Please use 'make clean' command to clean all."
 	@echo "======================================="
 
