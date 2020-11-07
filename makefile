@@ -16,8 +16,9 @@ DLL += -lcore -llua -lnghttp2
 
 prepare:
 # 	@git clone https://github.com/nghttp2/nghttp2.git -b v1.41.0
-	@git clone https://gitee.com/CandyMi/nghttp2.git -b v1.41.0
-	@mkdir build && cmake -D CMAKE_INSTALL_PREFIX=/usr/local/opt ENABLE_THREADS=OFF ENABLE_EXAMPLES=OFF .. && make && make install
+# 	@git clone https://gitee.com/CandyMi/nghttp2.git -b v1.41.0
+	@mkdir -p nghttp2/build
+	@cd nghttp2/build && cmake -D CMAKE_INSTALL_PREFIX=/usr/local -D ENABLE_THREADS=OFF -D ENABLE_EXAMPLES=OFF -D ENABLE_DEBUG=OFF .. && make && make install
 
 build:
 	@$(CC) -o lhpack.so lhpack.c $(INCLUDES) $(LIBS) $(CFLAGS) $(MICRO) $(DLL)
