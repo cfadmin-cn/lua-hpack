@@ -38,7 +38,7 @@ static int hpack_encode(lua_State *L) {
   char buf[bsize];
   memset(buf, 0x0, bsize);
 
-  size_t ret = nghttp2_hd_deflate_hd(hctx->encoder, (uint8_t *)buf, bsize, nList, index);
+  int ret = nghttp2_hd_deflate_hd(hctx->encoder, (uint8_t *)buf, bsize, nList, index);
   if (ret < 0)
     return luaL_error(L, "HPACK encode failed with error: %d, %s", ret, nghttp2_strerror(ret));
 
