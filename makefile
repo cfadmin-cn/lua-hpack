@@ -10,8 +10,8 @@ CC = cc
 RM = rm -rf
 MV = mv
 
-INCLUDES += -I../../../src -I/usr/local/include -I/usr/local/opt/nghttp2/include
-LIBS += -L../ -L../../../ -L/usr/local/lib -L/usr/local/opt/nghttp2/lib
+INCLUDES += -I../../src -I../../../src -I/usr/local/include -I/usr/local/opt/nghttp2/include
+LIBS += -L../ -L../../ -L../../../ -L/usr/local/lib -L/usr/local/opt/nghttp2/lib
 CFLAGS += -g0 -O3 -shared -fPIC
 MICRO += -fno-omit-frame-pointer -Wno-implicit-fallthrough -Wall -Wextra -Wno-unused-parameter
 DLL += -lcore -lnghttp2
