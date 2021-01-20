@@ -16,6 +16,8 @@ static int hpack_encode(lua_State *L) {
   if (!hctx)
     return luaL_error(L, "HPACK encode: Invalid string buffer.");
 
+  luaL_checktype(L, 2, LUA_TTABLE);
+
   nghttp2_nv nList[MAX_TABLE];
 
   int index = 0;
@@ -33,12 +35,19 @@ static int hpack_encode(lua_State *L) {
     index++;
   }
 
+  /* 如果是一个空表则返回空字符串 */
+  if (!index) {
+    lua_pushliteral(L, "");
+    return 1;
+  }
+
   luaL_Buffer B;
-  char *buf = luaL_buffinitsize(L, &B, nghttp2_hd_deflate_bound(hctx->encoder, nList, index));
+  int bsize = nghttp2_hd_deflate_bound(hctx->encoder, nList, index);
+  char *buf = luaL_buffinitsize(L, &B, bsize);
 
   int len = nghttp2_hd_deflate_hd(hctx->encoder, (uint8_t *)buf, bsize, nList, index);
   if (len < 0)
-    return luaL_error(L, "HPACK encode failed with error: %d, %s", ret, nghttp2_strerror(len));
+    return luaL_error(L, "HPACK encode failed with error: %d, %s", len, nghttp2_strerror(len));
 
   luaL_pushresultsize(&B, len);
 
@@ -52,13 +61,13 @@ static int hpack_decode(lua_State *L) {
   if (!buf || bsize < 1)
     return luaL_error(L, "HPACK decode: Invalid string buffer.");
 
-  lua_createtable(L, 32, 0);
+  lua_createtable(L, 64, 0);
+
+  int inflate_flags = 0;
+
+  nghttp2_nv nv;
 
   for (;;) {
-
-    int inflate_flags = 0;
-
-    nghttp2_nv nv = {};
 
     int dsize = nghttp2_hd_inflate_hd2(hctx->decoder, &nv, &inflate_flags, (uint8_t*)buf, bsize, 1);
     if (dsize < 0) {
