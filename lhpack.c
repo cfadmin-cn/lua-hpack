@@ -25,10 +25,9 @@ static int hpack_encode(lua_State *L) {
     const char* name = lua_tolstring(L, -2, &namelen);
     const char* value = lua_tolstring(L, -1, &valuelen);
     nList[index] = (nghttp2_nv){
-      .name = (uint8_t*)name, .value = (uint8_t*)value,
-      .namelen = namelen,     .valuelen = valuelen,
+      .name = (uint8_t*)name,    .namelen = namelen,
+      .value = (uint8_t*)value,  .valuelen = valuelen,
       .flags = NGHTTP2_NV_FLAG_NO_COPY_NAME | NGHTTP2_NV_FLAG_NO_COPY_VALUE,
-      // .flags = NGHTTP2_NV_FLAG_NONE,
     };
     lua_pop(L, 1);
     index++;
@@ -63,8 +62,11 @@ static int hpack_decode(lua_State *L) {
     nghttp2_nv nv = {};
 
     int dsize = nghttp2_hd_inflate_hd2(hctx->decoder, &nv, &inflate_flags, (uint8_t*)buf, bsize, 1);
-    if (dsize < 0)
-      return luaL_error(L, "HPACK decode failed with error: %s", nghttp2_strerror(dsize));
+    if (dsize < 0) {
+      lua_pushnil(L);
+      lua_pushfstring(L, "HPACK decode failed with error: %s", nghttp2_strerror(dsize));
+      return 2;
+    }
 
     /* 每次更新buffer位置 */
     buf += dsize; bsize -= dsize;
@@ -90,8 +92,14 @@ static int hpack_gc(lua_State *L) {
   if (hctx->closed)
     return 1;
   hctx->closed = 1;
-  nghttp2_hd_deflate_del(hctx->encoder);
-  nghttp2_hd_inflate_del(hctx->decoder);
+  if (hctx->encoder){
+    nghttp2_hd_deflate_del(hctx->encoder);
+    hctx->encoder = NULL;
+  }
+  if (hctx->decoder){
+    nghttp2_hd_inflate_del(hctx->decoder);
+    hctx->decoder = NULL;
+  }
   return 1;
 }
 
