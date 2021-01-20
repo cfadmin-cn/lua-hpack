@@ -3,6 +3,7 @@
 #include <core.h>
 #include <nghttp2/nghttp2.h>
 
+#define MAX_TABLE (512)
 
 struct hpack_ctx_t {
   size_t tsize; size_t closed;
@@ -10,13 +11,12 @@ struct hpack_ctx_t {
   nghttp2_hd_inflater *decoder;
 };
 
-
 static int hpack_encode(lua_State *L) {
   struct hpack_ctx_t *hctx = luaL_checkudata(L, 1, "__HPACK__");
   if (!hctx)
     return luaL_error(L, "HPACK encode: Invalid string buffer.");
 
-  nghttp2_nv nList[256];
+  nghttp2_nv nList[MAX_TABLE];
 
   int index = 0;
   lua_pushnil(L);
@@ -33,15 +33,14 @@ static int hpack_encode(lua_State *L) {
     index++;
   }
 
-  size_t bsize = nghttp2_hd_deflate_bound(hctx->encoder, nList, index);
-  char buf[bsize];
-  memset(buf, 0x0, bsize);
+  luaL_Buffer B;
+  char *buf = luaL_buffinitsize(L, &B, nghttp2_hd_deflate_bound(hctx->encoder, nList, index));
 
-  int ret = nghttp2_hd_deflate_hd(hctx->encoder, (uint8_t *)buf, bsize, nList, index);
-  if (ret < 0)
-    return luaL_error(L, "HPACK encode failed with error: %d, %s", ret, nghttp2_strerror(ret));
+  int len = nghttp2_hd_deflate_hd(hctx->encoder, (uint8_t *)buf, bsize, nList, index);
+  if (len < 0)
+    return luaL_error(L, "HPACK encode failed with error: %d, %s", ret, nghttp2_strerror(len));
 
-  lua_pushlstring(L, buf, ret);
+  luaL_pushresultsize(&B, len);
 
   return 1;
 }
