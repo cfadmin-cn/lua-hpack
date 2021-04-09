@@ -24,7 +24,7 @@ prepare:
 
 build:
 	@$(CC) -o lhpack.so lhpack.c $(INCLUDES) $(LIBS) $(CFLAGS) $(MICRO) $(DLL)
-	@$(MV) *.so ../../
+	@$(MV) *.so ../
 
 clean:
 	@$(RM) main *.so
