@@ -1,6 +1,6 @@
 # lhpack
 
-  Lua package based on ls-hpack.
+  Lua package based on nghttp2 hpack.
 
 ## Install
 
